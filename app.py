@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, abort, request
-import search_backend
+import iRnWsLeo.search_backend as search_backend
 app = Flask(__name__)
 
 
