@@ -1,7 +1,7 @@
 from nltk.tokenize import word_tokenize
 from nltk.stem.snowball import EnglishStemmer
 from nltk.corpus import stopwords
-from iRnWsLeo.search_backend.search import searchIndex
+from search import searchIndex
 import logging
 
 stemmer = EnglishStemmer()
