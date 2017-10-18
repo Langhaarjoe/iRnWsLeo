@@ -4,8 +4,7 @@ from nltk.corpus import stopwords
 import logging
 from iRnWsLeo.search_backend.crawler import crawl
 from collections import defaultdict
-import nltk
-nltk.download('stopwords')
+
 
 tokenizer = RegexpTokenizer(r'\w+')
 stopwords = set(stopwords.words('english'))

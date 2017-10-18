@@ -1,5 +1,5 @@
 from collections import defaultdict
-from create_index import index_files
+from iRnWsLeo.search_backend.create_index import index_files
 import nltk
 nltk.download('stopwords')
 

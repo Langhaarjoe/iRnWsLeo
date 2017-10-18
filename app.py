@@ -1,5 +1,7 @@
 from flask import Flask, render_template, jsonify, abort, request
 import search_backend
+import nltk
+nltk.download('stopwords')
 app = Flask(__name__)
 
 

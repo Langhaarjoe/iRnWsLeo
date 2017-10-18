@@ -1,7 +1,7 @@
 from nltk.tokenize import word_tokenize
 from nltk.stem.snowball import EnglishStemmer
 from nltk.corpus import stopwords
-from search import searchIndex
+from iRnWsLeo.search_backend.search_index import searchIndex
 import logging
 
 stemmer = EnglishStemmer()
@@ -10,6 +10,7 @@ indexSearch = searchIndex()
 
 
 def search(query_string):
+    print('foo')
     result_list = []
     term_list = []
     for term in word_tokenize(query_string):
@@ -28,3 +29,6 @@ def search(query_string):
         })
 
     return result_list
+
+
+search('migration')
