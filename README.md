@@ -1,7 +1,7 @@
 # iRnWs
 Information Retrieval &amp; Web Search
 
-[![Build Status](https://travis-ci.org/ChipaKraken/iRnWs.svg?branch=master)](https://travis-ci.org/ChipaKraken/iRnWs)
+[![Build Status](https://travis-ci.org/Langhaarjoe/iRnWsLeo.svg?branch=master)](https://travis-ci.org/Langhaarjoe/iRnWsLeo)
 
 ```bash
 sudo apt-get install ruby1.9.1-dev
