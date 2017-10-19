@@ -17,7 +17,6 @@ def search():
         abort(400)
 
     query = str(json['query']).strip()
-
     return jsonify(
         results=search_backend.search(query)
     )

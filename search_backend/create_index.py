@@ -2,16 +2,19 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.stem.snowball import EnglishStemmer
 from nltk.corpus import stopwords
 import logging
-from iRnWsLeo.search_backend.crawler import crawl
+from search_backend.crawler import crawl
+#from iRnWsLeo.search_backend.crawler import crawl
 from collections import defaultdict
-
+import nltk
+nltk.download('stopwords')
 
 tokenizer = RegexpTokenizer(r'\w+')
 stopwords = set(stopwords.words('english'))
 logger = logging.getLogger('BasicLogger')
 stemmer = EnglishStemmer()
 
-crawl = crawl(['test.txt'], [])
+crawl = crawl(['search_backend/test.txt'], [])
+#crawl = crawl(['test.txt'], [])
 
 def index_files():
     files = crawl.crawler()
