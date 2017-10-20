@@ -1,8 +1,6 @@
 from flask import Flask, render_template, jsonify, abort, request
 import search_backend
 from search_backend.create_index import index_files
-import nltk
-nltk.download('stopwords')
 app = Flask(__name__)
 
 index = index_files()
