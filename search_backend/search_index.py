@@ -5,13 +5,23 @@ from search_backend.create_index import index_files
 
 class searchIndex():
 
-    def __init__(self):
-        self.index = index_files()
-
-    def searchDoc(self, query_list):
+    def searchDoc(self, query_list, index):
         word_list = defaultdict(int).copy()
         doc_list = []
         for term in query_list:
-            doc_list.append(term)
-            word_list = self.index.get(term)
-        return doc_list, word_list
+            print(term)
+            print(query_list)
+            word_list = index.get(term)
+        return word_list
+
+    def search_and(self, query_list, index):
+        world_list = defaultdict(int).copy()
+        doc_list = []
+        for token in query_list:
+            if index.get(token) != None:
+                for key, value in index.iteritems():
+                    if value == token:
+                        world_list = index.get()
+
+    def phrase_search(self, query):
+        pass
