@@ -12,7 +12,9 @@ logger = logging.getLogger('BasicLogger')
 stemmer = EnglishStemmer()
 
 #crawl = crawl(['search_backend/test.txt'], [])
-list1 = ['search_backend/test.txt', 'search_backend/german.txt', 'search_backend/german2.txt', 'search_backend/dutch.txt', 'search_backend/dutch2.txt']
+list1 = ['search_backend/test.txt', 'search_backend/german.txt',
+         'search_backend/german2.txt', 'search_backend/dutch.txt',
+         'search_backend/dutch2.txt']
 #list1 = ['test.txt', 'german.txt', 'german2.txt', 'dutch2.txt', 'dutch.txt']
 #list1 = ['test.txt']
 crawl = crawl(list1, [])

@@ -25,21 +25,22 @@ def search(query_string, index):
         term_list.append(term)
 
     if searchIndex.searchDoc != None:
-        doc_list = searchIndex.searchDoc(term_list, index)
+        doc_list = searchIndex.search_and(term_list, index)
 
-    if (doc_list == None):
+    print(doc_list)
+
+    if (doc_list == []):
         result_list.append({
-            'title': 'You will not find "{}" here, try our competitor'.format(query_string),
-            'snippet': 'Failed search',
+            'title': 'Failed search',
+            'snippet': 'You will not find "{}" here, try our competitor'.format(query_string),
             'href': 'http://www.google.com'
         })
 
     else:
-        for key, value in doc_list.items():
-            print(key)
+        for key in doc_list:
             result_list.append({
-                'title': '“{}”'.format(query_string),
-                'snippet': 'Found in document "{}" at position: "{}"'.format(key, value),
+                'title': '{}'.format(key),
+                'snippet': '{}'.format(query_string),
                 'href': 'http://www.example.com'
             })
 
