@@ -14,7 +14,7 @@ stopwords = set(stopwords.words('english'))
 searchIndex = searchIndex()
 #index = index_files()
 
-def search(query_string, index):
+def search(query_string, index, summary_dic):
     result_list = []
     term_list = []
     for term in word_tokenize(query_string):
@@ -26,6 +26,8 @@ def search(query_string, index):
 
     if searchIndex.searchDoc != None:
         doc_list = searchIndex.search_phrase(term_list, index)
+
+    print(doc_list)
 
     if (doc_list == []) or (doc_list == None) or (doc_list == defaultdict(None, {})):
         result_list.append({
@@ -39,7 +41,7 @@ def search(query_string, index):
         for key in doc_list:
             result_list.append({
                 'title': '{}'.format(key),
-                'snippet': '{}'.format(doc_list[key]),
+                'snippet': 'Context: ...{}...<br/>Summary: {}'.format(doc_list[key], summary_dic[key]),
                 'href': 'http://www.example.com'
             })
 

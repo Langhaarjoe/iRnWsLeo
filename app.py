@@ -3,7 +3,7 @@ import search_backend
 from search_backend.create_index import index_files
 app = Flask(__name__)
 
-index = index_files()
+index, summary_dic = index_files()
 
 @app.route("/")
 def root():
@@ -18,7 +18,7 @@ def search():
 
     query = str(json['query']).strip()
     return jsonify(
-        results=search_backend.search(query, index)
+        results=search_backend.search(query, index, summary_dic)
     )
 
 

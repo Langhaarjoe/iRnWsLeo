@@ -3,7 +3,7 @@ from collections import defaultdict
 import numpy as np
 import logging
 #from iRnWsLeo.search_backend.crawler import crawl
-from search_backend.create_index import index_files
+#from search_backend.create_index import index_files
 
 logger = logging.getLogger('BasicLogger')
 
@@ -72,10 +72,14 @@ class searchIndex():
     def search_phrase(self, query_list, index):
         doc_list, _ = self.search_and(query_list, index)
         true_list = []
+        print(doc_list)
         context_list = defaultdict().copy()
         for i in range(len(query_list)-1):
+            print(i)
             for item in doc_list:
+                print(item)
                 for j in index[query_list[i]][item]:
+                    print(index[query_list[i]][item])
                     for k in index[query_list[i+1]][item]:
                         if ((k - j) < self.magical_number)\
                                 and ((k - j) > 0):
