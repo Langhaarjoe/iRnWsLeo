@@ -1,12 +1,12 @@
 from nltk.tokenize import word_tokenize
 from nltk.stem.snowball import EnglishStemmer
 from nltk.corpus import stopwords
+from collections import defaultdict
 from search_backend.search_index import searchIndex
 #from iRnWsLeo.search_backend.search_index import searchIndex
 #from search_backend.create_index import index_files
 #from iRnWsLeo.search_backend.create_index import index_files
-import logging
-import nltk
+
 #nltk.download('stopwords')
 
 stemmer = EnglishStemmer()
@@ -25,14 +25,13 @@ def search(query_string, index):
         term_list.append(term)
 
     if searchIndex.searchDoc != None:
-        doc_list = searchIndex.search_and(term_list, index)
+        doc_list = searchIndex.search_phrase(term_list, index)
 
-    print(doc_list)
-
-    if (doc_list == []):
+    if (doc_list == []) or (doc_list == None) or (doc_list == defaultdict(None, {})):
         result_list.append({
             'title': 'Failed search',
-            'snippet': 'You will not find "{}" here, try our competitor'.format(query_string),
+            'snippet': 'You will not find "{}"'
+                       ' here, try our competitor'.format(query_string),
             'href': 'http://www.google.com'
         })
 
@@ -40,7 +39,7 @@ def search(query_string, index):
         for key in doc_list:
             result_list.append({
                 'title': '{}'.format(key),
-                'snippet': '{}'.format(query_string),
+                'snippet': '{}'.format(doc_list[key]),
                 'href': 'http://www.example.com'
             })
 
