@@ -2,8 +2,8 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.snowball import EnglishStemmer
 from nltk.corpus import stopwords
 from collections import defaultdict
-from search_backend.search_index import searchIndex
-#from iRnWsLeo.search_backend.search_index import searchIndex
+#from search_backend.search_index import searchIndex
+from iRnWsLeo.search_backend.search_index import searchIndex
 #from search_backend.create_index import index_files
 #from iRnWsLeo.search_backend.create_index import index_files
 

@@ -1,14 +1,26 @@
-import re
-from iRnWsLeo.search_backend.create_index import index_files
+from nltk.tokenize import word_tokenize
+from nltk.stem.snowball import EnglishStemmer
+from nltk.corpus import stopwords
+stemmer = EnglishStemmer()
+stopwords = set(stopwords.words('english'))
 
-test_string = "How much wood could a wood chuck chuck if a wood chuck would chuck wood"
-search_word = "wood"
+document = {}
+document_words = {}
 
-for match in re.finditer('([^ ]*? |)%s( [^ ]*|)' % search_word, test_string):
-    print("entire match: %s" % match.group(0))
-    print("prev word: %s" % match.group(1))
-    print("next word: %s" % match.group(2))
+character_list = [',',';',':','(',')','&','/','{','}','[',']','-','_','.']
 
+with open('test.txt', 'r') as g:
+    text = g.read()
+    document[0] = text
 
-for key, value in index_files().items():
-    print(key, value)
+for id in document:
+    word_list = word_tokenize(document[id])
+    swap_list = []
+    for token in word_list:
+        token = stemmer.stem(token)
+        if (token in stopwords) or (token in character_list):
+            continue
+        swap_list.append(token)
+    document_words[0] = swap_list
+
+print(document_words)
