@@ -1,5 +1,6 @@
 import math
 
+
 def tf(word, document, index):
     return int(len(index[word][document]['position'])) / int(len(document))
 
@@ -15,3 +16,11 @@ def idf(word, document_list, index):
 
 def tfidf(word, document, document_list, index):
     return tf(word, document, index) * idf(word, document_list, index)
+
+
+def tfidf_lib():
+    """
+    gensim library has a tfidf model which can be used
+    :return:
+    """
+    pass

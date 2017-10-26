@@ -23,8 +23,8 @@ character_list = [',',';',':','(',')','&','/','{','}','[',']','-','_','.']
 #         'search_backend/german2.txt', 'search_backend/dutch.txt',
 #         'search_backend/dutch2.txt']
 #list1 = ['test.txt', 'german.txt', 'german2.txt', 'dutch2.txt', 'dutch.txt']
-#list1 = ['test.txt']
-list1 = ['german.txt', 'german2.txt']
+list1 = ['test.txt']
+#list1 = ['german.txt', 'german2.txt']
 crawl = crawl(list1, [])
 
 def index_files():
@@ -32,7 +32,7 @@ def index_files():
 
     structure of index:
 
-    {word: {position: [position1, position2], tf-idf: []}}
+    {word: document{position: [position1, position2], tf-idf: [], idf: [}, doc_length: []}
 
     :return:
     """
@@ -41,17 +41,18 @@ def index_files():
     summary_dic = defaultdict()
     document_words = {}
     for id in (files):
-        for start, end in tokenizer.span_tokenize(files[id]):
-            token = files[id][start:end].lower()
+        for start, end in tokenizer.span_tokenize(files[id]['text']):
+            token = files[id]['text'][start:end].lower()
             token = stemmer.stem(token)
             if (token in stopwords) or (token in character_list):
                 continue
             index[token][id]['position'].append(start)
+            index[token][id]['doc_length'] = files[id]['doc_length']
         #summary = sum_text.text_summarize_library(files[id])
         summary = 'Dummy summary'
         summary_dic[id] = summary
     for id in files:
-        word_list = word_tokenize(files[id])
+        word_list = word_tokenize(files[id]['text'])
         swap_list = []
         for token in word_list:
             token = stemmer.stem(token)
@@ -61,7 +62,8 @@ def index_files():
         document_words[id] = swap_list
     for id in (document_words):
         for token in document_words[id]:
-            index[token][id]['tf-idf'].append(tfidf.tfidf(token, id, document_words, index))
+            index[token][id]['tf-idf'] = (tfidf.tfidf(token, id, document_words, index))
+            index[token][id]['idf'] = (tfidf.idf(token, document_words, index))
     return index, summary_dic
 
 
