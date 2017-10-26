@@ -41,7 +41,7 @@ def search(query_string, index, summary_dic):
         for key in doc_list:
             result_list.append({
                 'title': '{}'.format(key),
-                'snippet': 'Context: ...{}...<br/>Summary: {}'.format(doc_list[key], summary_dic[key]),
+                'snippet': 'Context: ...{}...<br/>Summary: {}'.format(doc_list[key]['context'], summary_dic[key]),
                 'href': 'http://www.example.com'
             })
 
