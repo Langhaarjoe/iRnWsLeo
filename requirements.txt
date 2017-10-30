@@ -5,4 +5,3 @@ nltk==3.2.5
 numpy==1.13.3
 networkx==2.0
 gensim==3.0.1
-textblob==0.13.0
