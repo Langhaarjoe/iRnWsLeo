@@ -40,34 +40,21 @@ for root, dirs, files in os.walk(dir + "/../python-3.6.3-docs-text", topdown=Tru
         list_all.append(file_path)
 
 crawl = crawl(list_all, [])
-#list1 = ['search_backend/test.txt', 'search_backend/german.txt',
-#         'search_backend/german2.txt', 'search_backend/dutch.txt',
-#         'search_backend/dutch2.txt']
-#list1 = ['test.txt', 'german.txt', 'german2.txt', 'dutch2.txt', 'dutch.txt']
-#list1 = ['test.txt']
-#list1 = ['german.txt', 'german2.txt']
-#crawl = crawl(list1, [])
 
 def index_files():
     '''
 
     structure of python dict:
 
-    {word: document{position: [position1, position2], tf-idf: [], idf: [], doc_length: []}
+    OLD: {word: document{position: [position1, position2], tf-idf: [], idf: [], doc_length: []}
 
-    ﻿CREATE TABLE words(word text, id serial PRIMARY KEY, tf_idf float, idf float);
+    ﻿CREATE TABLE words(word text, id serial PRIMARY KEY);
     CREATE TABLE documents(document text, id serial PRIMARY KEY, length int, snippet text);
     CREATE TABLE positions(position int, document_id int, index_id int,
         FOREIGN KEY (document_id) REFERENCES documents(id), FOREIGN KEY (index_id) REFERENCES words(id))
 
-    postgres database:
-    db.execute("""INSERT INTO words (word, id, td_idf) VALUES (%s, %s, %s);""", ('test2', 2, 0.01))
-    db.execute("SELECT word FROM words;")
-    db.execute("SELECT word FROM words;")
-    print(db.fetchall())
-
     database:
-    words: word, id, tf_idf, idf, document_id
+    words: word, id
     documents: document, id, length, snippet, path
     positions: position, id, document_id (foreign key), index_id (foreign key)
 
@@ -80,7 +67,8 @@ def index_files():
     for id in (files):
         #document = documents(document=files[id]['text'], length=files[id]['doc_length'], snippet='dummy snippet')
         summary = sum_text.text_summarize_library(files[id]['text'])
-        document = documents(document=files[id]['title'], length=100, summary=summary, path=('/iRnWsLeo/'+files[id]['title']))
+        document_length = files[id]['doc_length']
+        document = documents(document=files[id]['title'], length=document_length, summary=summary, path=('/iRnWsLeo/'+files[id]['title']))
         s.add(document)
         for start, end in tokenizer.span_tokenize(files[id]['text']):
             token = files[id]['text'][start:end].lower()
@@ -102,23 +90,5 @@ def index_files():
             index[token][id]['doc_length'] = files[id]['doc_length']
             s.flush()
         s.commit()
-    for id in files:
-        word_list = word_tokenize(files[id]['text'])
-        swap_list = []
-        for token in word_list:
-            token = stemmer.stem(token)
-            if (token in stopwords) or (token in character_list):
-                continue
-            swap_list.append(token)
-        document_words[id] = swap_list
-    for id in (document_words):
-        for token in document_words[id]:
-            sql.update(words).where(words.word==token).values(tf_idf=tfidf.tfidf(token, id, document_words, index))
-            sql.update(words).where(words.word==token).values(idf=tfidf.idf(token, document_words, index))
-            index[token][id]['tf-idf'] = (tfidf.tfidf(token, id, document_words, index))
-            index[token][id]['idf'] = (tfidf.idf(token, document_words, index))
-            s.flush()
-        s.commit()
-        logger.info('Finished updating tf-idf')
     logger.info('Finished with index')
     return

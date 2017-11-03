@@ -64,9 +64,8 @@ class searchIndex():
         ).having(
             sql.func.count(sql.distinct(positions.index_id)) >= str(len(query_list))
         ).all()
-        index_list = self.s.query(words.id).filter(words.word.in_(query_list)).all()
-        print(index_list)
-        return doc_list, index_list
+        #index_list = self.s.query(words.id).filter(words.word.in_(query_list)).all()
+        return doc_list
 
     def ranking_and(self, query_list, database):
         """
@@ -77,7 +76,7 @@ class searchIndex():
         :return: ranking list with the tf_idf ranking and the context list with the information
             which gets displayed
         """
-        doc_list, index_list= self.search_and(query_list, database)
+        doc_list = self.search_and(query_list, database)
         words, documents, positions = database
         context_list = defaultdict(defaultdict(str).copy)
         ranking_list = {}
@@ -85,15 +84,31 @@ class searchIndex():
         doc_list_index = []
         for i, _ in doc_list:
             doc_list_index.append(i)
-        length_all_documents = self.s.query(documents.length).filter(documents.id.in_(doc_list_index)).all()
-        average_length_document_list = sum(length_all_documents[0])/len(length_all_documents)
+        length_all_documents = self.s.query(
+            documents.length
+        ).filter(documents.id.in_(doc_list_index)
+                 ).all()
+        average_length_document_list = sum(
+            length_all_documents[0])/len(
+            length_all_documents)
         for document, _ in doc_list:
-            context, = self.s.query(documents.summary).filter(documents.id == document).first()
-            path,  = self.s.query(documents.document).filter(documents.id == document).first()
+            context, = self.s.query(
+                documents.summary
+            ).filter(documents.id == document
+                     ).first()
+            path,  = self.s.query(
+                documents.document
+            ).filter(
+                documents.id == document
+            ).first()
             # position of the first word in the query list which is used for the snippet
             position,  = self.s.query(positions.position).filter(
-                positions.index_id == self.s.query(words.id).filter(words.word == query_list[0]),
-                positions.document_id == document).first()
+                positions.index_id == self.s.query(
+                    words.id
+                ).filter(
+                    words.word == query_list[0]),
+                positions.document_id == document
+            ).first()
             len_document_list = len(doc_list)
             len_document,  = self.s.query(
                 documents.length
@@ -123,7 +138,10 @@ class searchIndex():
                 idf_query = idf(len_document_list, document_containing_word)
                 term_frequency = tf(number_word_document, len_document)
                 document_length = len_document
-                bm25_query.append(bm25(idf_query, term_frequency, document_length, average_length_document_list))
+                bm25_query.append(bm25(idf_query,
+                                       term_frequency,
+                                       document_length,
+                                       average_length_document_list))
             bm25_sum = sum(bm25_query)
             context_list[path]['summary'] = context
             tfidf_sum = sum(tfids)
@@ -142,35 +160,46 @@ class searchIndex():
         :return:
         """
         words, documents, positions = database
-        doc_list, index_list, _ = self.search_and(query_list, database)
+        doc_list = self.search_and(query_list, database)
         true_list = []
-        print(doc_list)
-        ranking_list = defaultdict(defaultdict(int).copy)
+        ranking_list = {}
         context_list = defaultdict(defaultdict(str).copy)
-        #print(self.s.query(words.word).first())
-        for i in range(len(index_list)-1):
-            for item in doc_list:
-                #for j in index[query_list[i]][item]['position']:
-                print('item', item)
-                for j in self.s.query(positions.position).filter(positions.document_id == item[0], positions.index_id == index_list[i]).all():
-                    #context_list[item]['tfidf'] += index[query_list[i]][item]['tfidf']
-                    ranking_list[item.document]['tfidf'] += self.s.query(words.tf_idf).filter(words.id == index_list[i]).first()[0]
-                    #print(index[query_list[i]][item])
-                    #for k in index[query_list[i+1]][item]['position']:
-                    print('j', j)
-                    for k in self.s.query(positions.position).filter(
-                                positions.document_id == item.id,
-                                positions.index_id == index_list[i+1]).all():
-                        print('k', k)
-                        if ((int(k[0]) - int(j[0])) < self.magical_number)\
-                                and ((int(k[0]) - int(j[0])) > 0):
-                            print('#########', k,k[0],j,j[0])
+        for i in range(len(query_list)-1):
+            for item, _ in doc_list:
+                for j, _ in self.s.query(
+                        positions.position
+                ).filter(
+                            positions.document_id == item,
+                            positions.index_id == self.s.query(
+                        words.id
+                    ).filter(
+                                words.word == query_list[i])
+                ).all():
+                    for k, _ in self.s.query(
+                            positions.position
+                    ).filter(
+                                positions.document_id == item,
+                                positions.index_id == self.s.query(
+                        words.id
+                    ).filter(
+                                words.word == query_list[i+1])
+                    ).all():
+                        if ((int(k) - int(j)) < self.magical_number)\
+                                and ((int(k) - int(j)) > 0):
                             true_list.append(True)
                 if len(true_list) == (len(query_list)-1):
-                    print('#######ll', self.get_context(item.document, int(j[0])))
-                    context_list[item.document]['context'] = (self.get_context(item.document, int(j[0])))
-                    context_list[item.document]['summary'] = item.summary
-                ranking_list[item.document]['bm25'] = (bm25(index_list, doc_list, item, database))
+                    path, = self.s.query(
+                        documents.document
+                    ).filter(
+                        documents.id == item
+                    ).first()
+                    context, = self.s.query(
+                        documents.summary
+                    ).filter(documents.id == item
+                             ).first()
+                    context_list[item.document]['snippet'] = (self.get_context(path, int(j)))
+                    context_list[item.document]['summary'] = context
+                #ranking_list[item.document]['bm25'] = (bm25(index_list, doc_list, item, database))
         return context_list, ranking_list
 
 

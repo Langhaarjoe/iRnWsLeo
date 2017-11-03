@@ -41,10 +41,13 @@ def search(query_string, database):
 
     else:
         for key in search_results:
-            print(context_list[key[0]])
             result_list.append({
                 'title': '{}'.format(key[0]),
-                'snippet': '<b>Context</b>: ...{}...<br/><b>Summary</b>: {}<br/>ranking: {}'.format(context_list[key[0]]['snippet'], context_list[key[0]]['summary'], context_list[key[0]]['bm25']),
+                'snippet': '<b>Context</b>: ...{}...<br/><b>Summary</b>: '
+                           '{}<br/>ranking: {}'.format(
+                    context_list[key[0]]['snippet'],
+                    context_list[key[0]]['summary'],
+                    context_list[key[0]]['bm25']),
                 'href': 'http://www.example.com'
             })
 

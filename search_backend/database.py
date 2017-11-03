@@ -15,12 +15,10 @@ class words(Base):
 
     id = sql.Column(sql.Integer, primary_key=True)
     word = sql.Column(sql.String, unique=True)
-    tf_idf = sql.Column(sql.Integer)
-    idf = sql.Column(sql.Integer)
 
     def __repr__(self):
-        return "<words(word='%s', tf_idf='%.4f', idf='%.5f'>" \
-               % (self.word, self.tf_idf, self.idf)
+        return "<words(word='%s'>" \
+               % (self.word)
 
 class documents(Base):
     __tablename__ = 'documents'
