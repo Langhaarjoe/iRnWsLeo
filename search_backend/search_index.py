@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 import sqlalchemy as sql
 #from iRnWsLeo.search_backend.bm25 import bm25
 from search_backend.bm25 import bm25
-from search_backend.tfidf import tfidf
+from search_backend.tfidf import tfidf, idf, tf
 #from iRnWsLeo.search_backend.crawler import crawl
 #from search_backend.create_index import index_files
 
@@ -46,48 +46,60 @@ class searchIndex():
         doc_list = np.unique(doc_list)
 
     def search_and(self, query_list, database):
+        """
+
+        :param query_list: tokenized and stemmed list of query
+        :param database: database parameters
+        :return: returns list of documents_index which contain every word
+        """
         words, documents, positions = database
-        doc_dic = defaultdict(list).copy()
-        doc_len = 0
-        index_list = []
-        smallest = ''
-        unique_doc_list = defaultdict(list).copy()
-        doc_list = []
         context = defaultdict().copy()
-        #for token in query_list:
-        #    token_query = self.s.query(words.id).filter(words.word == token).first()
-        #    if token_query != None:
-        #        index_id = token_query[0]
-        #        for document_i in self.s.query(positions).filter(positions.index_id == index_id).all():
-        #            if document_i.document_id in doc_dic[token]:
-        #                continue
-        #            else:
-        #                document = self.s.query(documents).filter(documents.id == document_i.document_id).first()
-        #                doc_dic[token].append(document)
-        #        index_list.append(index_id)
-        doc_list = self.s.query(positions.document_id, sql.func.count(sql.distinct(positions.index_id)).label('cnt')).\
-            filter(positions.index_id.in_(self.s.query(words.id).
-                                                                         filter(words.word.in_(query_list)))).\
-            group_by(positions.document_id).having(sql.func.count(sql.distinct(positions.index_id)) >= str(len(query_list))).all()
+        doc_list = self.s.query(
+            positions.document_id, sql.func.count(sql.distinct(positions.index_id)).
+                label('cnt')
+        ).filter(
+            positions.index_id.in_(self.s.query(words.id).filter(words.word.in_(query_list)))
+        ).group_by(
+            positions.document_id
+        ).having(
+            sql.func.count(sql.distinct(positions.index_id)) >= str(len(query_list))
+        ).all()
         index_list = self.s.query(words.id).filter(words.word.in_(query_list)).all()
         print(index_list)
-        #context = self.get_context(doc_list, None)
-        return doc_list, index_list, context
+        return doc_list, index_list
 
     def ranking_and(self, query_list, database):
-        doc_list, index_list, _ = self.search_and(query_list, database)
+        """
+        executes the ranking and the gets the additional information for the output
+
+        :param query_list: stemmend and tokenized list of query
+        :param database: database parameters
+        :return: ranking list with the tf_idf ranking and the context list with the information
+            which gets displayed
+        """
+        doc_list, index_list= self.search_and(query_list, database)
         words, documents, positions = database
         context_list = defaultdict(defaultdict(str).copy)
         ranking_list = {}
         tfids = []
-        for document in doc_list:
-            context = self.s.query(documents.summary).filter(documents.id == document[0]).first()[0]
-            path = self.s.query(documents.document).filter(documents.id == document[0]).first()[0]
-            position = self.s.query(positions.position).filter(
-                positions.index_id == self.s.query(words.id).filter(words.word == query_list[0]), positions.document_id == document[0]).first()[0]
+        doc_list_index = []
+        for i, _ in doc_list:
+            doc_list_index.append(i)
+        length_all_documents = self.s.query(documents.length).filter(documents.id.in_(doc_list_index)).all()
+        average_length_document_list = sum(length_all_documents[0])/len(length_all_documents)
+        for document, _ in doc_list:
+            context, = self.s.query(documents.summary).filter(documents.id == document).first()
+            path,  = self.s.query(documents.document).filter(documents.id == document).first()
+            # position of the first word in the query list which is used for the snippet
+            position,  = self.s.query(positions.position).filter(
+                positions.index_id == self.s.query(words.id).filter(words.word == query_list[0]),
+                positions.document_id == document).first()
             len_document_list = len(doc_list)
-            len_document = self.s.query(documents.length).filter(documents.id == document[0]).first()[0]
-
+            len_document,  = self.s.query(
+                documents.length
+            ).filter(
+                documents.id == document
+            ).first()
             for i in query_list:
                 document_containing_word = len(
                     self.s.query(
@@ -96,14 +108,29 @@ class searchIndex():
                         positions.index_id == words.id,
                         words.word == i
                     ).all())
-                number_word_document = len(self.s.query(positions.position).filter(positions.index_id == self.s.query(words.id).filter(words.word == i).first()[0], positions.document_id == document[0]).all())
-                tfids.append(tfidf(number_word_document, len_document, len_document_list, document_containing_word))
+                number_word_document = len(self.s.query(
+                    positions.position
+                ).filter(
+                    positions.index_id == words.id,
+                    words.word == i,
+                    positions.document_id == document
+                ).all())
+                tfids.append(tfidf(number_word_document,
+                                   len_document,
+                                   len_document_list,
+                                   document_containing_word))
+                bm25_query = []
+                idf_query = idf(len_document_list, document_containing_word)
+                term_frequency = tf(number_word_document, len_document)
+                document_length = len_document
+                bm25_query.append(bm25(idf_query, term_frequency, document_length, average_length_document_list))
+            bm25_sum = sum(bm25_query)
             context_list[path]['summary'] = context
             tfidf_sum = sum(tfids)
             context_list[path]['snippet'] = self.get_context(path, position)
-            #context_list[path]['snippet'] = 'dummy snippet'
             context_list[path]['tf_idf'] = tfidf_sum
-            ranking_list[path] = tfidf_sum
+            context_list[path]['bm25'] = bm25_sum
+            ranking_list[path] = bm25_sum
         return context_list, ranking_list
 
     def search_phrase(self, query_list, database):
@@ -148,10 +175,10 @@ class searchIndex():
 
 
     def get_context(self, document, position):
-
-        with open(document, "r") as g:
-            doc = g.read()
-
-            text = doc[int(position):int(position)+(self.context_number)]
-            print('#######', doc[int(position):int(position) + 10], text)
+        try:
+            with open(document, "r") as g:
+                doc = g.read()
+                text = doc[int(position):int(position)+(self.context_number)]
+        except:
+            logger.warning('Not able to open file {}'.format(document))
         return text
