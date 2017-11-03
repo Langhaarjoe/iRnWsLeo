@@ -1,21 +1,21 @@
 import math
 
 
-def tf(word, document, index):
-    return int(len(index[word][document]['position'])) / int(len(document))
+def tf(number_word_document, len_document):
+    return int(number_word_document)/int(len_document)
 
 
-def n_containing(word, index):
+def n_containing(document_containing_word):
     n = 0
-    for id in index[word]:
+    for id in range(document_containing_word):
         n += 1
     return n
 
-def idf(word, document_list, index):
-    return math.log(len(document_list) / (1 + n_containing(word, index)))
+def idf(len_document_list, document_containing_word):
+    return math.log((len_document_list) / (1 + n_containing(document_containing_word)))
 
-def tfidf(word, document, document_list, index):
-    return tf(word, document, index) * idf(word, document_list, index)
+def tfidf(number_word_document, len_document, len_document_list, document_containing_word):
+    return tf(number_word_document, len_document) * idf(len_document_list, document_containing_word)
 
 
 def tfidf_lib():

@@ -2,8 +2,9 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.snowball import EnglishStemmer
 from nltk.corpus import stopwords
 from collections import defaultdict
-#from search_backend.search_index import searchIndex
-from iRnWsLeo.search_backend.search_index import searchIndex
+from search_backend.search_index import searchIndex
+import operator
+#from iRnWsLeo.search_backend.search_index import searchIndex
 #from search_backend.create_index import index_files
 #from iRnWsLeo.search_backend.create_index import index_files
 
@@ -14,7 +15,7 @@ stopwords = set(stopwords.words('english'))
 searchIndex = searchIndex()
 #index = index_files()
 
-def search(query_string, index, summary_dic):
+def search(query_string, database):
     result_list = []
     term_list = []
     for term in word_tokenize(query_string):
@@ -25,11 +26,12 @@ def search(query_string, index, summary_dic):
         term_list.append(term)
 
     if searchIndex.searchDoc != None:
-        doc_list = searchIndex.search_phrase(term_list, index)
+        context_list, ranking_list = searchIndex.ranking_and(term_list, database)
 
-    print(doc_list)
+    search_results = sorted(ranking_list.items(), key=lambda kv: (-kv[1], kv[0]), reverse=True)
+    #for key, value in sorted(docs.items(), key=lambda kv: (-kv[1], kv[0])):
 
-    if (doc_list == []) or (doc_list == None) or (doc_list == defaultdict(None, {})):
+    if (context_list == []) or (context_list == None) or (context_list == defaultdict(None, {})):
         result_list.append({
             'title': 'Failed search',
             'snippet': 'You will not find "{}"'
@@ -38,10 +40,11 @@ def search(query_string, index, summary_dic):
         })
 
     else:
-        for key in doc_list:
+        for key in search_results:
+            print(context_list[key[0]])
             result_list.append({
-                'title': '{}'.format(key),
-                'snippet': 'Context: ...{}...<br/>Summary: {}'.format(doc_list[key]['context'], summary_dic[key]),
+                'title': '{}'.format(key[0]),
+                'snippet': '<b>Context</b>: ...{}...<br/><b>Summary</b>: {}<br/>ranking: {}'.format(context_list[key[0]]['snippet'], context_list[key[0]]['summary'], context_list[key[0]]['tf_idf']),
                 'href': 'http://www.example.com'
             })
 
